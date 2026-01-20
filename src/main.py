@@ -196,12 +196,12 @@ if __name__ == "__main__":
 
     # save the information for the job add
     company_name = "CD Project Red"
-    position = "Senior Gameplay Animator (Locomotion)"
+    position = "Senior Gameplay Animator (NPC)"
     log_job_applied_for(company_name, position)
 
     # update google sheet with job application info
     today = datetime.date.today().strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
-    website = "https://www.cdprojektred.com/en/jobs/21199-senior-gameplay-animator-locomotion"
+    website = "https://www.cdprojektred.com/en/jobs/21197-senior-gameplay-animator-npc"
     job_email = "Applied on website"
     location = "Boston, MA, United States"
     work_location = "On-site"
