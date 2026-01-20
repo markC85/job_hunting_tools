@@ -1,10 +1,27 @@
 import pyperclip
 import json
 import datetime
-from pathlib import Path
+import logging
 import gspread
+from pathlib import Path
 from google.oauth2.service_account import Credentials
 
+# set logger data
+LOG = logging.getLogger(__name__)
+LOG.setLevel("DEBUG")
+
+# Create console handler
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+
+# Optional: formatter for nicer output
+formatter = logging.Formatter(
+    "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
+ch.setFormatter(formatter)
+
+# Attach the handler to your logger
+LOG.addHandler(ch)
 
 def log_google_sheet_data(
         creds_path: str,
@@ -124,21 +141,33 @@ def log_job_applied_for(company_name: str, position: str) -> None:
 
     # create a new json file with the information highlighted
     file_name = f"{company_name}_{position}"
-    jsong_name = file_name.replace(" ", "_").lower() + "_job_description.json"
-    write_json_file(position, company_name, path_structure / jsong_name)
+    jsong_name = f"{file_name.replace(" ", "_").lower()}_{1:03d}_job_description.json"
+
+    if (path_structure / jsong_name).exists():
+        LOG.debug(f"Job description file already exists!\nFile: {jsong_name}\nPath: {path_structure}")
+        files = [file for file in path_structure.iterdir() if file.is_file()]
+        new_file_index = 1
+        for file in files:
+            if file.name.startswith(file_name.replace(" ", "_").lower()+"_"):
+                new_file_index += 1
+        jsong_name =  f"{file_name.replace(" ", "_").lower()}_{new_file_index:03d}_job_description.json"
+
+    json_file_path = path_structure / jsong_name
+
+    write_json_file(position, company_name, json_file_path)
 
 
 if __name__ == "__main__":
     # save the information for the job add
     company_name = "CD Project Red"
-    position = "Senior Gameplay Animator (NPC)"
+    position = "Senior Gameplay Animator (Locomotion)"
     log_job_applied_for(company_name, position)
 
     # update google sheet with job application info
     today = datetime.date.today().strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
-    website = "https://www.google.com/careers"
+    website = "https://www.cdprojektred.com/en/jobs/21199-senior-gameplay-animator-locomotion"
     job_email = "Applied on website"
-    location = "Mountain View, CA"
+    location = "Boston, MA, United States"
     work_location = "On-site"
     industry = "Games"
     date = today
@@ -165,4 +194,4 @@ if __name__ == "__main__":
     sheet_name = "Job log"
     tab_name = "Jobs Applied For"
 
-    log_google_sheet_data(creds_path,scopes,sheet_name,data,tab_name)
+    #log_google_sheet_data(creds_path,scopes,sheet_name,data,tab_name)
