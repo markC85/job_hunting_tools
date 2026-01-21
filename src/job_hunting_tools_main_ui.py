@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QScrollArea,
+    QComboBox
 )
 
 LOG = start_logger()
@@ -137,6 +138,14 @@ class MainWindow(QMainWindow):
                 self.google_sheet_credential_path_field = QLineEdit()
                 main_layout.addWidget(self.google_sheet_credential_path_field)
                 main_layout.addWidget(self.set_google_sheet_credential_path_btn)
+            elif label_name == "Work Location:":
+                self.work_mode_dropdown = QComboBox()
+                self.work_mode_dropdown.addItems([
+                    "Onsite",
+                    "Hybrid",
+                    "Remote"
+                ])
+                main_layout.addWidget(self.work_mode_dropdown)
             else:
                 field = QLineEdit()
                 main_layout.addWidget(field)
@@ -199,6 +208,8 @@ class MainWindow(QMainWindow):
         """
         field_data = self.gather_field_information()
 
+        field_data["Work Location"] = self.work_mode_dropdown.currentText()
+
         file_path, _ = QFileDialog.getSaveFileName(
             self, "Save Preset", "", "JSON Files (*.json)"
         )
@@ -258,6 +269,13 @@ class MainWindow(QMainWindow):
         for key, widget in field_data.items():
             value = data.get(key, "")
             widget.setText(value)
+
+        # set the dropdowns data
+        value = data.get("Work Location")
+        index = self.work_mode_dropdown.findText(value)
+        if index != -1:
+            self.work_mode_dropdown.setCurrentIndex(index)
+
 
     def gather_field_information(self) -> dict:
         """
