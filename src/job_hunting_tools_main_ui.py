@@ -89,11 +89,11 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(f"Jog Hunting Tools {self.version}")
         self.resize(400, 800)
 
-        self.build_ui()
-        self.create_menu()
-        self.create_connections()
+        self._ui_widgets()
+        self._create_menu()
+        self._create_connections()
 
-    def build_ui(self) -> None:
+    def _ui_widgets(self) -> None:
         """
         UI fields and layout
         """
@@ -208,7 +208,7 @@ class MainWindow(QMainWindow):
         scroll_area.setWidget(content_widget)
         self.setCentralWidget(scroll_area)
 
-    def create_menu(self) -> None:
+    def _create_menu(self) -> None:
         """
         Create the menu bar with File -> Exit
         """
@@ -247,18 +247,18 @@ class MainWindow(QMainWindow):
         # Add the action to the About menu
         help_menu.addAction(self.about_project)
 
-    def create_connections(self) -> None:
+    def _create_connections(self) -> None:
         """
         Connect signals (events) to methods.
         """
         current_date = f"{datetime.date.today().strftime('%m/%d/%Y').lstrip('0').replace('/0', '/')}"
 
-        self.update_records_btn.clicked.connect(self.update_records)
-        self.set_google_sheet_credential_path_btn.clicked.connect(self.set_google_sheet_credential_path)
+        self.update_records_btn.clicked.connect(self._update_records)
+        self.set_google_sheet_credential_path_btn.clicked.connect(self._set_google_sheet_credential_path)
         self.set_date_btn.clicked.connect(lambda: self.date_field.setText(current_date))
 
-        self.save_preset.triggered.connect(self.save_field_presets)
-        self.load_preset.triggered.connect(self.load_field_presets)
+        self.save_preset.triggered.connect(self._save_field_presets)
+        self.load_preset.triggered.connect(self._load_field_presets)
         self.exit_action.triggered.connect(self.close)
 
         self.about_project.triggered.connect(self._show_about_dialog)
@@ -267,11 +267,11 @@ class MainWindow(QMainWindow):
         dlg = AboutDialog(self.version, self)
         dlg.exec()
 
-    def save_field_presets(self) -> None:
+    def _save_field_presets(self) -> None:
         """
         Save the current field presets to a file
         """
-        field_data = self.gather_field_information()
+        field_data = self._gather_field_information()
 
         field_data["Work Location"] = self.work_mode_dropdown.currentText()
 
@@ -285,7 +285,7 @@ class MainWindow(QMainWindow):
         with Path(file_path).open("w", encoding="utf-8") as f:
             json.dump(field_data, f, ensure_ascii=False, indent=4)
 
-    def set_google_sheet_credential_path(self) -> None:
+    def _set_google_sheet_credential_path(self) -> None:
         """
         This will set the google sheet credential path field
         """
@@ -300,7 +300,7 @@ class MainWindow(QMainWindow):
 
         self.google_sheet_credential_path_field.setText(file_path)
 
-    def load_field_presets(self) -> None:
+    def _load_field_presets(self) -> None:
         """
         This will load fields presets from a JSON file
         """
@@ -342,7 +342,7 @@ class MainWindow(QMainWindow):
             self.work_mode_dropdown.setCurrentIndex(index)
 
 
-    def gather_field_information(self) -> dict:
+    def _gather_field_information(self) -> dict:
         """
         Gather all the information from the UI fields
 
@@ -357,12 +357,12 @@ class MainWindow(QMainWindow):
 
         return field_data
 
-    def update_records(self) -> None:
+    def _update_records(self) -> None:
         """
         Update the records for Google Sheets and log the job application
         information based on what is in the current clip board of windows
         """
-        field_data = self.gather_field_information()
+        field_data = self._gather_field_information()
 
         company_name = field_data["Company Name"]
         position = field_data["Position"]
@@ -430,6 +430,6 @@ def show_ui() -> MainWindow:
 
     return _window
 
-if __name__ == "__main__":
-    show_ui()
-    sys.exit(_app.exec())
+# start the UI
+show_ui()
+sys.exit(_app.exec())
