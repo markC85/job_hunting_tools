@@ -1,4 +1,3 @@
-import pyperclip
 import json
 import datetime
 import gspread
@@ -83,12 +82,16 @@ def update_google_sheet(
         table_range="A2",
     )
 
-def write_json_file(position: str, company_name: str, json_file_path: Path) -> None:
+def write_json_file(position: str, company_name: str, json_file_path: Path, job_description: str) -> None:
     """
     This will write a JSON file in a directory given
+
+    Args:
+        position (str): The position name of the job
+        company_name (str): The name of the company the job is for
+        json_file_path (Path): The path to the JSON file to write
+        job_description (str): The job description text
     """
-    # get the text from the clipboard
-    job_description = pyperclip.paste()
 
     # build json data structure
     job_data = {
@@ -124,7 +127,7 @@ def create_folder_structure(company_name: str, job_root_path: str = r"D:\storage
 
     return company_folder_path
 
-def log_job_applied_for(company_name: str, position: str) -> str:
+def log_job_applied_for(company_name: str, position: str, job_description: str) -> str:
     """
     This will log a job information I need to keep track of
     what a job is asking for as requirements for future details.
@@ -132,6 +135,7 @@ def log_job_applied_for(company_name: str, position: str) -> str:
     Args:
         company_name (str): The name of the company the job is for
         position (str): The position name of the job
+        job_description (str): The job description text
 
     Returns:
         msg (str): The message to log if the action worked out
@@ -155,7 +159,7 @@ def log_job_applied_for(company_name: str, position: str) -> str:
     json_file_path = path_structure / jsong_name
 
     try:
-        write_json_file(position, company_name, json_file_path)
+        write_json_file(position, company_name, json_file_path, job_description)
         msg = f"Job description saved!\nFile: {jsong_name}\nPath: {path_structure}"
     except Exception as e:
         msg = f"Failed to save job description file.\nError: {e}"

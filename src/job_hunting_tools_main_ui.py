@@ -1,6 +1,7 @@
 import datetime
 import json
 import sys
+import webbrowser
 from pathlib import Path
 
 from job_hunting_tools.src.job_hunting_tools_backend import (
@@ -22,7 +23,8 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QComboBox,
     QMessageBox,
-    QDialog
+    QDialog,
+    QPlainTextEdit
 )
 
 LOG = start_logger()
@@ -154,6 +156,7 @@ class MainWindow(QMainWindow):
         tool_description = (
             "This tool helps job seekers manage and track their job applications.\n"
         )
+
         tool_description_label = QLabel(tool_description)
         states_description_label = QLabel("Current Tool Run Success:")
         self.states_lable = QLabel("<< States - you have not run me yet :) >>")
@@ -170,7 +173,13 @@ class MainWindow(QMainWindow):
             "Google Sheet Credential Path:",
             "Google Sheet Name:",
             "Google Sheet Tab Name:",
+            "Job Description:"
         ]
+
+        self.job_description = QPlainTextEdit()
+        self.job_description.setPlaceholderText(
+            "Paste the job description here…"
+        )
 
         main_layout.addWidget(tool_description_label)
 
@@ -190,12 +199,10 @@ class MainWindow(QMainWindow):
                 main_layout.addWidget(self.set_google_sheet_credential_path_btn)
             elif label_name == "Work Location:":
                 self.work_mode_dropdown = QComboBox()
-                self.work_mode_dropdown.addItems([
-                    "Onsite",
-                    "Hybrid",
-                    "Remote"
-                ])
+                self.work_mode_dropdown.addItems(["Onsite", "Hybrid", "Remote"])
                 main_layout.addWidget(self.work_mode_dropdown)
+            elif label_name == "Job Description:":
+                main_layout.addWidget(self.job_description)
             else:
                 field = QLineEdit()
                 main_layout.addWidget(field)
@@ -218,13 +225,18 @@ class MainWindow(QMainWindow):
 
         # File menu
         file_menu = menu_bar.addMenu("File")
+        tool_menu = menu_bar.addMenu("Tools")
         help_menu = menu_bar.addMenu("Help")
 
-        # About menu options
+        # tool menu options
+        self.cover_letter_generator = QAction("Cover Letter Generator", self)
+        self.cover_letter_generator.setStatusTip("Open the Cover Letter Generator Tool")
+
+        # about menu options
         self.about_project = QAction("About", self)
         self.about_project.setStatusTip("About this project")
 
-        # Exit action
+        # exit action
         self.exit_action = QAction("Exit", self)
         self.exit_action.setShortcut("Ctrl+Q")
         self.exit_action.setStatusTip("Exit the application")
@@ -247,6 +259,9 @@ class MainWindow(QMainWindow):
         # Add the action to the About menu
         help_menu.addAction(self.about_project)
 
+        # Add the action to the Tools menu
+        tool_menu.addAction(self.cover_letter_generator)
+
     def _create_connections(self) -> None:
         """
         Connect signals (events) to methods.
@@ -260,6 +275,8 @@ class MainWindow(QMainWindow):
         self.save_preset.triggered.connect(self._save_field_presets)
         self.load_preset.triggered.connect(self._load_field_presets)
         self.exit_action.triggered.connect(self.close)
+
+        self.cover_letter_generator.triggered.connect(lambda: webbrowser.open("https://sheetsresume.com/ai-cover-letter-generator"))
 
         self.about_project.triggered.connect(self._show_about_dialog)
 
@@ -399,7 +416,8 @@ class MainWindow(QMainWindow):
             )
             return
 
-        job_log_result = log_job_applied_for(company_name, position)
+        job_description=self.job_description.toPlainText()
+        job_log_result = log_job_applied_for(company_name, position, job_description)
         google_sheet_result = log_google_sheet_data(
             creds_path,
             scopes,
