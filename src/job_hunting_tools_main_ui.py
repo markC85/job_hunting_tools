@@ -20,13 +20,59 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QScrollArea,
-    QComboBox
+    QComboBox,
+    QMessageBox,
+    QDialog
 )
 
 LOG = start_logger()
 
 _app = None
 _window = None
+
+class AboutDialog(QDialog):
+    def __init__(self, version: str, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("About Job Hunting Tools")
+        self.setFixedSize(420, 300)
+
+        layout = QVBoxLayout(self)
+        layout.setAlignment(Qt.AlignTop)
+
+        title = QLabel("<b>Job Hunting Tools</b>")
+        version = QLabel(f"Version {version}")
+
+        description = QLabel(
+            "Job Hunting Tools is a utility to manage job applications, "
+            "presets, and record updates. Built with Python and PySide6. "
+            "I got tiered of repeating the process so I started thinking of"
+            "ways to automate this process so this is what I built I hope it"
+            "helps you out too!"
+        )
+        description.setWordWrap(True)
+
+        links = QLabel(
+            """
+            <a href="https://github.com/markC85">GitHub</a><br>
+            <a href="https://mark_conrad.artstation.com">Animation Portfolio</a>
+            <a href="http://www.linkedin.com/in/markaconrad">Linkedin Profile</a>
+            """
+        )
+        links.setOpenExternalLinks(True)
+        links.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        links.setCursor(Qt.PointingHandCursor)
+
+        close_btn = QPushButton("Close")
+        close_btn.clicked.connect(self.accept)
+
+        layout.addWidget(title)
+        layout.addWidget(version)
+        layout.addWidget(description)
+        layout.addSpacing(10)
+        layout.addWidget(links)
+        layout.addStretch()
+        layout.addWidget(close_btn)
 
 class MainWindow(QMainWindow):
     """
@@ -168,6 +214,11 @@ class MainWindow(QMainWindow):
 
         # File menu
         file_menu = menu_bar.addMenu("File")
+        help_menu = menu_bar.addMenu("Help")
+
+        # About menu options
+        self.about_project = QAction("About", self)
+        self.about_project.setStatusTip("About this project")
 
         # Exit action
         self.exit_action = QAction("Exit", self)
@@ -189,6 +240,9 @@ class MainWindow(QMainWindow):
         file_menu.addAction(self.load_preset)
         file_menu.addAction(self.exit_action)
 
+        # Add the action to the About menu
+        help_menu.addAction(self.about_project)
+
     def create_connections(self) -> None:
         """
         Connect signals (events) to methods.
@@ -198,9 +252,16 @@ class MainWindow(QMainWindow):
         self.update_records_btn.clicked.connect(self.update_records)
         self.set_google_sheet_credential_path_btn.clicked.connect(self.set_google_sheet_credential_path)
         self.set_date_btn.clicked.connect(lambda: self.date_field.setText(current_date))
+
         self.save_preset.triggered.connect(self.save_field_presets)
         self.load_preset.triggered.connect(self.load_field_presets)
         self.exit_action.triggered.connect(self.close)
+
+        self.about_project.triggered.connect(self._show_about_dialog)
+
+    def _show_about_dialog(self):
+        dlg = AboutDialog(self.version, self)
+        dlg.exec()
 
     def save_field_presets(self) -> None:
         """
@@ -304,7 +365,7 @@ class MainWindow(QMainWindow):
         website = field_data["Website"]
         job_email = field_data["Job Email"]
         location = field_data["Company Location"]
-        work_location = field_data["Work Location"]
+        work_location = self.work_mode_dropdown.currentText()
         date = field_data["Date"]
         industry = field_data["Industry"]
         creds_path = field_data["Google Sheet Credential Path"]
