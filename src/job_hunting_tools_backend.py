@@ -1,56 +1,12 @@
 import pyperclip
 import json
 import datetime
-import logging
 import gspread
 from pathlib import Path
 from google.oauth2.service_account import Credentials
+from job_hunting_tools.src.logger_setup import start_logger
 
-
-class ColorFormatter(logging.Formatter):
-    """
-    Custom logging formatter to add colors based on log level
-    """
-    RESET = "\033[0m"
-    COLORS = {
-        logging.DEBUG: "\033[36m",  # Cyan
-        logging.INFO: "\033[33m",  # Yellow
-        logging.WARNING: "\033[33m",  # Yellow
-        logging.ERROR: "\033[31m",  # Red
-        logging.CRITICAL: "\033[31m",  # Red
-    }
-
-    def format(self, record):
-        color = self.COLORS.get(record.levelno, self.RESET)
-        record.msg = f"{color}{record.msg}{self.RESET}"
-        return super().format(record)
-
-def start_logger(level: str = "DEBUG") -> logging.Logger:
-    """
-    This will start the logger for the application
-
-    Args:
-        level (str): The logging level to use
-
-    Returns:
-        logging.Logger: The configured logger
-    """
-    # set logger data
-    LOG = logging.getLogger(__name__)
-    LOG.setLevel(level)
-
-    # Attach the handler to your logger
-    if not LOG.hasHandlers():
-        ch = logging.StreamHandler()
-        ch.setLevel(logging.DEBUG)
-
-        # THIS IS THE KEY: use ColorFormatter, not plain Formatter
-        formatter = ColorFormatter("%(asctime)s - %(levelname)s - %(message)s")
-        ch.setFormatter(formatter)
-
-        LOG.addHandler(ch)
-
-    return LOG
+LOG = start_logger()
 
 def log_google_sheet_data(
         creds_path: str,
@@ -188,56 +144,3 @@ def log_job_applied_for(company_name: str, position: str) -> None:
     write_json_file(position, company_name, json_file_path)
 
     LOG.info(f"Job description saved!\nFile: {jsong_name}\nPath: {path_structure}")
-
-
-if __name__ == "__main__":
-    # start the logger
-    LOG = start_logger()
-
-    # save the information for the job add
-    company_name = "Artificial Core"
-    position = "3D Character Animator"
-    log_job_applied_for(company_name, position)
-
-    # update google sheet with job application info
-    today = datetime.date.today().strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
-    website = "https://artificialcore.com/"
-    #website = "N/A"
-
-    job_email = "jobs@artificialcore.com"
-
-    #location = "On Site"
-    #location = "Hybrid"
-    location = "Remote"
-    #location = "N/A"
-
-    work_location = "Athens, Attica, Greece| Kyiv, Kyiv City, Ukraine| Amsterdam, North Holland, Netherlands"
-
-    industry = "Game Development"
-    #industry = "Film"
-    #industry = "TV"
-    date = today
-
-    data = [
-        [
-            position,
-            company_name,
-            website,
-            job_email,
-            location,
-            work_location,
-            industry,
-            date
-        ],
-    ]
-
-    scopes = [
-        "https://www.googleapis.com/auth/spreadsheets",
-        "https://www.googleapis.com/auth/drive",
-    ]
-
-    creds_path = r"D:\storage\programming\python\job_hunting_tools\credentials\update-project-484819-d526e259cada.json"
-    sheet_name = "Job log"
-    tab_name = "Jobs Applied For"
-
-    #log_google_sheet_data(creds_path,scopes,sheet_name,data,tab_name)
