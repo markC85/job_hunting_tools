@@ -63,6 +63,9 @@ class AboutDialog(QDialog):
         links.setTextInteractionFlags(Qt.TextBrowserInteraction)
         links.setCursor(Qt.PointingHandCursor)
 
+        email = QLabel("Email: markconrad.animator@gmail.com")
+        email.setTextInteractionFlags(Qt.TextBrowserInteraction)
+
         close_btn = QPushButton("Close")
         close_btn.clicked.connect(self.accept)
 
@@ -71,6 +74,7 @@ class AboutDialog(QDialog):
         layout.addWidget(description)
         layout.addSpacing(10)
         layout.addWidget(links)
+        layout.addWidget(email)
         layout.addStretch()
         layout.addWidget(close_btn)
 
