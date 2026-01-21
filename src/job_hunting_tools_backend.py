@@ -119,7 +119,7 @@ def update_google_sheet(
 
 def write_json_file(position: str, company_name: str, json_file_path: Path) -> None:
     """
-    This will write a json file in a dicectory given
+    This will write a JSON file in a directory given
     """
     # get the text from the clipboard
     job_description = pyperclip.paste()
@@ -132,7 +132,7 @@ def write_json_file(position: str, company_name: str, json_file_path: Path) -> N
         "date_applied": datetime.datetime.now().isoformat(),
     }
 
-    # write the json file
+    # write the JSON file
     with json_file_path.open("w", encoding="utf-8") as f:
         json.dump(job_data, f, ensure_ascii=False, indent=4)
 
@@ -144,7 +144,7 @@ def create_folder_structure(company_name: str, job_root_path: str = r"D:\storage
         company_name (str): The name of the company the job is for
         job_root_path (str): The root path where the job folders will be created
     """
-    # standerdise the company name to remove spaces and make lowercase
+    # standardize the company name to remove spaces and make lowercase
     company_name = company_name.replace(" ", "_").lower()
 
     # create the root path object
@@ -161,7 +161,7 @@ def create_folder_structure(company_name: str, job_root_path: str = r"D:\storage
 def log_job_applied_for(company_name: str, position: str) -> None:
     """
     This will log a job information I need to keep track of
-    what a job is asking for as requrements for future details.
+    what a job is asking for as requirements for future details.
 
     Args:
         company_name (str): The name of the company the job is for
@@ -170,7 +170,7 @@ def log_job_applied_for(company_name: str, position: str) -> None:
     # create the folder structure for the job applying for
     path_structure = create_folder_structure(company_name)
 
-    # create a new json file with the information highlighted
+    # create a new JSON file with the information highlighted
     file_name = f"{company_name}_{position}"
     jsong_name = f"{file_name.replace(" ", "_").lower()}_{1:03d}_job_description.json"
 
@@ -195,17 +195,27 @@ if __name__ == "__main__":
     LOG = start_logger()
 
     # save the information for the job add
-    company_name = "CD Project Red"
-    position = "Senior Gameplay Animator (NPC)"
+    company_name = "Artificial Core"
+    position = "3D Character Animator"
     log_job_applied_for(company_name, position)
 
     # update google sheet with job application info
     today = datetime.date.today().strftime("%m/%d/%Y").lstrip("0").replace("/0", "/")
-    website = "https://www.cdprojektred.com/en/jobs/21197-senior-gameplay-animator-npc"
-    job_email = "Applied on website"
-    location = "Boston, MA, United States"
-    work_location = "On-site"
-    industry = "Games"
+    website = "https://artificialcore.com/"
+    #website = "N/A"
+
+    job_email = "jobs@artificialcore.com"
+
+    #location = "On Site"
+    #location = "Hybrid"
+    location = "Remote"
+    #location = "N/A"
+
+    work_location = "Athens, Attica, Greece| Kyiv, Kyiv City, Ukraine| Amsterdam, North Holland, Netherlands"
+
+    industry = "Game Development"
+    #industry = "Film"
+    #industry = "TV"
     date = today
 
     data = [
