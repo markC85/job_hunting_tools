@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
 
         self.version = "1.0.0"
         self.setWindowTitle(f"Jog Hunting Tools {self.version}")
-        #self.resize(800, 200)
+        self.resize(400, 800)
 
         self.build_ui()
         self.create_menu()
@@ -102,8 +102,10 @@ class MainWindow(QMainWindow):
 
         tool_description = (
             "This tool helps job seekers manage and track their job applications.\n"
-                            )
+        )
         tool_description_label = QLabel(tool_description)
+        states_description_label = QLabel("Current Tool Run Success:")
+        self.states_lable = QLabel("<< States - you have not run me yet :) >>")
 
         labels_fields = [
             "Company Name:",
@@ -140,6 +142,8 @@ class MainWindow(QMainWindow):
                 main_layout.addWidget(field)
 
         main_layout.addWidget(self.update_records_btn)
+        main_layout.addWidget(states_description_label)
+        main_layout.addWidget(self.states_lable)
 
         # Set the content widget as the scroll area's widget
         scroll_area.setWidget(content_widget)
@@ -276,8 +280,6 @@ class MainWindow(QMainWindow):
         information based on what is in the current clip board of windows
         """
         field_data = self.gather_field_information()
-        from pprint import pprint
-        pprint(field_data)
 
         company_name = field_data["Company Name"]
         position = field_data["Position"]
@@ -309,17 +311,20 @@ class MainWindow(QMainWindow):
         ]
 
         if not creds_path or not sheet_name:
-            LOG.error("Google Sheet Credential Path and Sheet Name are required to update records.")
+            LOG.error(
+                "Google Sheet Credential Path and Sheet Name are required to update records."
+            )
             return
 
-        log_job_applied_for(company_name, position)
-        log_google_sheet_data(
+        job_log_result = log_job_applied_for(company_name, position)
+        google_sheet_result = log_google_sheet_data(
             creds_path,
             scopes,
             sheet_name,
             google_sheet_data,
             tab_name
         )
+        self.states_lable.setText(f"{job_log_result}\n{google_sheet_result}")
 
 def show_ui() -> MainWindow:
     """

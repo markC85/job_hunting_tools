@@ -13,7 +13,7 @@ def log_google_sheet_data(
         scopes: list,
         sheet_name: str,
         data: list,
-        tab_name: None | str = None) -> None:
+        tab_name: None | str = None) -> str:
     """
     This will log data to a google sheet
 
@@ -23,11 +23,21 @@ def log_google_sheet_data(
         sheet_name (str): The name of the google sheet to update
         data (list): The data to append to the google sheet
         tab_name (str | None): The name of the tab to update, if None, the first tab will be used
+
+    Returns:
+        msg (str): The message to log if the action worked out
     """
     client = authenticate_google_sheets(creds_path, scopes)
-    update_google_sheet(client, sheet_name, data, tab_name)
 
-    LOG.info(f"Google sheet '{sheet_name}' updated successfully.")
+    try:
+        update_google_sheet(client, sheet_name, data, tab_name)
+        msg = f"Google sheet '{sheet_name}' updated successfully."
+    except Exception as e:
+        msg = f"An error occurred while updating the google sheet: {e}"
+
+    LOG.info(msg)
+
+    return msg
 
 def authenticate_google_sheets(creds_path: str, scopes: list) -> gspread.Client:
     """
@@ -114,7 +124,7 @@ def create_folder_structure(company_name: str, job_root_path: str = r"D:\storage
 
     return company_folder_path
 
-def log_job_applied_for(company_name: str, position: str) -> None:
+def log_job_applied_for(company_name: str, position: str) -> str:
     """
     This will log a job information I need to keep track of
     what a job is asking for as requirements for future details.
@@ -122,6 +132,9 @@ def log_job_applied_for(company_name: str, position: str) -> None:
     Args:
         company_name (str): The name of the company the job is for
         position (str): The position name of the job
+
+    Returns:
+        msg (str): The message to log if the action worked out
     """
     # create the folder structure for the job applying for
     path_structure = create_folder_structure(company_name)
@@ -137,10 +150,17 @@ def log_job_applied_for(company_name: str, position: str) -> None:
         for file in files:
             if file.name.startswith(file_name.replace(" ", "_").lower()+"_"):
                 new_file_index += 1
-        jsong_name =  f"{file_name.replace(" ", "_").lower()}_{new_file_index:03d}_job_description.json"
+        jsong_name = f"{file_name.replace(' ', '_').lower()}_{new_file_index:03d}_job_description.json"
 
     json_file_path = path_structure / jsong_name
 
-    write_json_file(position, company_name, json_file_path)
+    try:
+        write_json_file(position, company_name, json_file_path)
+        msg = f"Job description saved!\nFile: {jsong_name}\nPath: {path_structure}"
+    except Exception as e:
+        msg = f"Failed to save job description file.\nError: {e}"
+        LOG.error(msg)
 
-    LOG.info(f"Job description saved!\nFile: {jsong_name}\nPath: {path_structure}")
+    LOG.info(msg)
+
+    return msg
