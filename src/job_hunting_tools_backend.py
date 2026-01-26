@@ -82,7 +82,7 @@ def update_google_sheet(
         table_range="A2",
     )
 
-def write_json_file(position: str, company_name: str, json_file_path: Path, job_description: str) -> None:
+def write_json_file(position: str, company_name: str, json_file_path: Path, job_description: str, resume_used_path: str) -> None:
     """
     This will write a JSON file in a directory given
 
@@ -91,6 +91,7 @@ def write_json_file(position: str, company_name: str, json_file_path: Path, job_
         company_name (str): The name of the company the job is for
         json_file_path (Path): The path to the JSON file to write
         job_description (str): The job description text
+        resume_used_path (str): The path to the resume used for the job application
     """
 
     # build json data structure
@@ -99,6 +100,7 @@ def write_json_file(position: str, company_name: str, json_file_path: Path, job_
         "position_name": position,
         "company_name": company_name,
         "date_applied": datetime.datetime.now().isoformat(),
+        "resume_used_path": resume_used_path,
     }
 
     # write the JSON file
@@ -127,7 +129,25 @@ def create_folder_structure(company_name: str, job_root_path: str = r"D:\storage
 
     return company_folder_path
 
-def log_job_applied_for(company_name: str, position: str, job_description: str) -> str:
+def copy_file_to_path(source_path: Path, destination_path: Path) -> None:
+    """
+    This will copy a file to a destination path
+
+    Args:
+        source_path (Path): The path to the source file
+        destination_path (Path): The path to the destination folder
+    """
+    if not source_path.exists():
+        LOG.error(f"Source file does not exist: {source_path}")
+        return
+
+    with source_path.open("rb") as src_file:
+        with destination_path.open("wb") as dest_file:
+            dest_file.write(src_file.read())
+
+    LOG.debug(f"Copied file from {source_path} to {destination_path}")
+
+def log_job_applied_for(company_name: str, position: str, job_description: str, resume_used_path: str) -> str:
     """
     This will log a job information I need to keep track of
     what a job is asking for as requirements for future details.
@@ -136,6 +156,7 @@ def log_job_applied_for(company_name: str, position: str, job_description: str) 
         company_name (str): The name of the company the job is for
         position (str): The position name of the job
         job_description (str): The job description text
+        resume_used_path (str): The path to the resume used for the job application
 
     Returns:
         msg (str): The message to log if the action worked out
@@ -159,12 +180,17 @@ def log_job_applied_for(company_name: str, position: str, job_description: str) 
     json_file_path = path_structure / jsong_name
 
     try:
-        write_json_file(position, company_name, json_file_path, job_description)
+        write_json_file(position, company_name, json_file_path, job_description, resume_used_path)
         msg = f"Job description saved!\nFile: {jsong_name}\nPath: {path_structure}"
     except Exception as e:
         msg = f"Failed to save job description file.\nError: {e}"
         LOG.error(msg)
 
     LOG.info(msg)
+
+    # copy the file to the location path
+    scr_path = Path(resume_used_path)
+    destination_path = Path(path_structure) / scr_path.name
+    copy_file_to_path(scr_path, destination_path)
 
     return msg

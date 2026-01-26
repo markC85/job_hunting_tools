@@ -152,6 +152,8 @@ class MainWindow(QMainWindow):
             "Set Google Sheet Credential Path"
         )
         self.set_google_sheet_credential_path_btn.setStyleSheet(button_style)
+        self.resume_path_field_btn = QPushButton("Set Resume Path")
+        self.resume_path_field_btn.setStyleSheet(button_style)
 
         tool_description = (
             "This tool helps job seekers manage and track their job applications.\n"
@@ -170,6 +172,7 @@ class MainWindow(QMainWindow):
             "Company Location:",
             "Industry:",
             "Date:",
+            "Resume Used:",
             "Google Sheet Credential Path:",
             "Google Sheet Name:",
             "Google Sheet Tab Name:",
@@ -203,6 +206,10 @@ class MainWindow(QMainWindow):
                 main_layout.addWidget(self.work_mode_dropdown)
             elif label_name == "Job Description:":
                 main_layout.addWidget(self.job_description)
+            elif label_name == "Resume Used:":
+                self.resume_path_field = QLineEdit()
+                main_layout.addWidget(self.resume_path_field)
+                main_layout.addWidget(self.resume_path_field_btn)
             else:
                 field = QLineEdit()
                 main_layout.addWidget(field)
@@ -270,6 +277,7 @@ class MainWindow(QMainWindow):
 
         self.update_records_btn.clicked.connect(self._update_records)
         self.set_google_sheet_credential_path_btn.clicked.connect(self._set_google_sheet_credential_path)
+        self.resume_path_field_btn.clicked.connect(self._set_resume_path)
         self.set_date_btn.clicked.connect(lambda: self.date_field.setText(current_date))
 
         self.save_preset.triggered.connect(self._save_field_presets)
@@ -316,6 +324,21 @@ class MainWindow(QMainWindow):
         file_path = file_path.replace("/", "\\")
 
         self.google_sheet_credential_path_field.setText(file_path)
+
+    def _set_resume_path(self) -> None:
+        """
+        This will set the resume path field
+        """
+        file_path, _ = QFileDialog.getOpenFileName(
+            self, "Select the Resume you want to organize", "", "*.*"
+        )
+
+        if not file_path:
+            return
+
+        file_path = file_path.replace("/", "\\")
+
+        self.resume_path_field.setText(file_path)
 
     def _load_field_presets(self) -> None:
         """
@@ -377,7 +400,7 @@ class MainWindow(QMainWindow):
     def _update_records(self) -> None:
         """
         Update the records for Google Sheets and log the job application
-        information based on what is in the current clip board of windows
+        information based on what is in the job description field
         """
         field_data = self._gather_field_information()
 
@@ -392,6 +415,7 @@ class MainWindow(QMainWindow):
         creds_path = field_data["Google Sheet Credential Path"]
         sheet_name = field_data["Google Sheet Name"]
         tab_name = field_data["Google Sheet Tab Name"]
+        resume_used_path = field_data["Resume Used"]
         google_sheet_data = [
             [
                 position,
@@ -417,7 +441,7 @@ class MainWindow(QMainWindow):
             return
 
         job_description=self.job_description.toPlainText()
-        job_log_result = log_job_applied_for(company_name, position, job_description)
+        job_log_result = log_job_applied_for(company_name, position, job_description, resume_used_path)
         google_sheet_result = log_google_sheet_data(
             creds_path,
             scopes,
