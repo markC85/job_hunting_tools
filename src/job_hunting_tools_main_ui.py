@@ -4,11 +4,6 @@ import sys
 import webbrowser
 from pathlib import Path
 
-from job_hunting_tools.src.job_hunting_tools_backend import (
-    log_google_sheet_data,
-    log_job_applied_for,
-)
-from job_hunting_tools.src.logger_setup import start_logger
 from PySide6.QtCore import Qt
 from PySide6.QtGui import QAction
 from PySide6.QtWidgets import (
@@ -26,6 +21,11 @@ from PySide6.QtWidgets import (
     QDialog,
     QPlainTextEdit
 )
+from job_hunting_tools.src.job_hunting_tools_backend import (
+    log_google_sheet_data,
+    log_job_applied_for,
+)
+from job_hunting_tools.src.logger_setup import start_logger
 
 LOG = start_logger()
 
@@ -239,6 +239,9 @@ class MainWindow(QMainWindow):
         self.cover_letter_generator = QAction("Cover Letter Generator", self)
         self.cover_letter_generator.setStatusTip("Open the Cover Letter Generator Tool")
 
+        self.resume_checker = QAction("Resume Scanner", self)
+        self.resume_checker.setStatusTip("Resume Scanner tool to help build better resume")
+
         # about menu options
         self.about_project = QAction("About", self)
         self.about_project.setStatusTip("About this project")
@@ -268,6 +271,7 @@ class MainWindow(QMainWindow):
 
         # Add the action to the Tools menu
         tool_menu.addAction(self.cover_letter_generator)
+        tool_menu.addAction(self.resume_checker)
 
     def _create_connections(self) -> None:
         """
@@ -285,6 +289,8 @@ class MainWindow(QMainWindow):
         self.exit_action.triggered.connect(self.close)
 
         self.cover_letter_generator.triggered.connect(lambda: webbrowser.open("https://sheetsresume.com/ai-cover-letter-generator"))
+        self.resume_checker.triggered.connect(
+            lambda: webbrowser.open("https://cultivatedculture.com/resume-scanner"))
 
         self.about_project.triggered.connect(self._show_about_dialog)
 
