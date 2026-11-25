@@ -87,7 +87,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self.version = "1.0.0"
+        self.version = "1.1.0"
         self.setWindowTitle(f"Jog Hunting Tools {self.version}")
         self.resize(400, 800)
 
